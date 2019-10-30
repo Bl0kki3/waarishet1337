@@ -1,0 +1,214 @@
+<html lang="en-US">
+
+<head>
+	<title>Waar is het 1337?</title>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	<script type="text/javascript"
+			src="data.js"></script>
+	<script type="text/javascript"
+			src="flags.js"></script>
+	<script type="text/javascript"
+			src="timezones.js"></script>
+	<style>
+		html, body {
+			padding: 0;
+			margin: 0;
+			color: #aaa;
+			font-family: Calibri;
+		}
+
+		*, *:before, *:after {
+			box-sizing: border-box;
+		}
+
+		h1, h2, h3, h4, h5, h6 {
+			margin: 0;
+			padding: 0;
+			color: #3B854A;
+		}
+
+		.box {
+			display: flex;
+			flex-direction: column;
+			height: 100vh;
+		}
+
+		.devider {
+			border-top: 2px #EBEBEB solid;
+			margin: 1rem 20%;
+			width: 60%;
+			height: 1px;
+		}
+
+		.leet {
+			display: flex;
+			justify-content: center;
+			flex-grow: 1;
+		}
+
+		.leet img {
+			max-height: 100%;
+			max-width: 100%;
+		}
+
+		.countries {
+			display: flex;
+			justify-content: center;
+			height: 15rem;
+			padding: 5rem 0;
+		}
+
+		.countries .country {
+			display: flex;
+		}
+
+		.countries .country .flag {
+			margin-right: 2rem;
+			height: 4.25rem;
+			width: 4.25rem;
+			position: relative;
+		}
+
+		.countries .country .flag img {
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+
+		.countries .country h1 a {
+			font-size: 3rem;
+			line-height: 3rem;
+			text-decoration: none;
+			color: #3B854A;
+			text-transform: uppercase;
+		}
+
+		.countries .country h4 {
+			text-transform: uppercase;
+			font-size: 1.25rem;
+			line-height: 1.25rem;
+			color: #B1C8BE;
+		}
+
+		.footer {
+			padding: 3rem 0 1rem 0;
+			text-align: center;
+		}
+
+		.footer h5 {
+			font-size: .875rem;
+			font-weight: bold;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="box">
+		<div class="leet">
+			<img src="1337.svg" alt="1337">
+		</div>
+		<div class="devider"></div>
+
+		<div class="countries">
+			<div class="country">
+				<div class="flag">
+					<img id="activeFlagImage" alt="Country">
+				</div>
+				<div>
+					<h1 id="activeFlagText">[Country]</h1>
+					<h4 id="otherCountriesText">En 30 andere landen</h4>
+				</div>
+			</div>
+		</div>
+
+		<div class="devider"></div>
+
+		<div class="footer">
+			<div>Waar is het <b>1337</b> wordt u aangeboden door: </div>
+			<div><h4>Products en Jovero</h4></div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+
+		let date = new Date;
+		let countries = new Array();
+
+		aryIannaTimeZones.forEach((timeZone) => {
+			let strTime = date.toLocaleString("en-US", { timeZone: `${timeZone}` });
+
+			let localDate = new Date(strTime);
+			var localHours = localDate.getHours();
+			var localMinutes = localDate.getMinutes();
+
+			var partyTime = localHours == 13 && localMinutes == 37;
+			var almostTime = localHours == 13 && localMinutes <= 37;
+			var nextTime = localHours == 12 && localMinutes > 37;
+
+			if (almostTime || nextTime) {
+				let country = findCountryByTimeZone(timeZone);
+				if (country) {
+					countries.push(country);
+				}
+			}
+		});
+
+		var countryCounts = countries.reduce((map, country) => {
+			var idx = map.findIndex(e => e.country == country);
+			if (idx > -1) {
+				map[idx].count++;
+			} else {
+				map.push({ country: country, count: 1, });
+			}
+			return map;
+		}, []);
+		
+		let country = null;
+		var nlIdx = countryCounts.findIndex(c => c.country == "NL");
+
+		if(nlIdx > -1) {
+			country = countryCounts[nlIdx];
+		} else {
+			let randIdx = Math.floor(Math.random() * (countryCounts.length - 1));
+			country = countryCounts[randIdx];
+		}
+
+		var highestRankdCountry = countryCounts.reduce((r, v) => {
+			if (!r.country || r.count <= v.count) {
+				r = v;
+			}
+			return r;
+		}, {});
+
+		if (country) {
+			printUnicodeFlagByCountryCode(country.country)
+		}
+
+		function findCountryByTimeZone(timeZoneName) {
+			var country = timeZoneCountries.timezones[timeZoneName];
+
+			if (country && country.c) {
+				return country.c;
+			}
+		}
+
+		function printUnicodeFlagByCountryCode(countryCode) {
+			if (!countryCode) {
+				return;
+			}
+
+			let flagCode = flags.find(f => f.code == countryCode);
+			const activeFlagImage = document.querySelector('#activeFlagImage');
+			const activeFlagText = document.querySelector('#activeFlagText');
+			const otherCountriesText = document.querySelector('#otherCountriesText');
+
+			activeFlagImage.src = `flags/${flagCode.unicode.replace(/U\+/g, "").replace(" ", "-")}.svg`;
+			activeFlagText.innerHTML = `<a href="https://www.google.com/maps/place/${flagCode.name}/" target='_blank'>${flagCode.name}</a>`;
+			otherCountriesText.innerHTML = `En ${countryCounts.length - 1} andere landen`;			
+		}
+	</script>
+</body>
+</html>
